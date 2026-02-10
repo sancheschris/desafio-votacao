@@ -3,8 +3,8 @@ package org.desafio.backend.service;
 import java.time.Instant;
 import java.util.UUID;
 import org.desafio.backend.domain.Pauta;
+import org.desafio.backend.dto.PautaRequest;
 import org.desafio.backend.repository.PautaRepository;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
@@ -28,6 +28,8 @@ class PautaServiceTest {
     @Test
     void testCreatePauta__returnsSavedPauta() {
         // Arrange
+        PautaRequest request = new PautaRequest("Aprovar orçamento 2026");
+
         Pauta pauta = Pauta.builder()
                 .id(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"))
                 .titulo("Aprovar o orçamento de 2026")
@@ -37,7 +39,7 @@ class PautaServiceTest {
         when(pautaRepository.save(any(Pauta.class))).thenReturn(pauta);
 
         // Act
-        Pauta createdPauta = pautaService.createPauta(pauta);
+        Pauta createdPauta = pautaService.createPauta(request);
 
         // Assert
         assertNotNull(createdPauta);
@@ -45,5 +47,16 @@ class PautaServiceTest {
         assertEquals(pauta.getId(), createdPauta.getId());
         assertEquals(pauta.getCreatedAt(), createdPauta.getCreatedAt());
         verify(pautaRepository, atLeastOnce()).save(any(Pauta.class));
+    }
+
+    @Test
+    void testCreatePauta__throwsExceptionWhenTituloIsEmpty() {
+        // Arrange
+        PautaRequest request = new PautaRequest("");
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> {
+            pautaService.createPauta(request);
+        });
     }
 }
