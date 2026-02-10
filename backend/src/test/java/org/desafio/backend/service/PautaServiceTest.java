@@ -59,4 +59,15 @@ class PautaServiceTest {
             pautaService.createPauta(request);
         });
     }
+
+    @Test
+    void testCreatePauta__throwsExceptionWhenTituloIsNull() {
+        // Arrange
+        PautaRequest request = new PautaRequest(null);
+
+        // Act & Assert
+        assertThrows(IllegalArgumentException.class, () -> {
+            pautaService.createPauta(request);
+        });
+    }
 }
