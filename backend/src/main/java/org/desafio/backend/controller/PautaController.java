@@ -22,9 +22,9 @@ public class PautaController {
     }
 
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
     public ResponseEntity<PautaResponse> criarPauta(@RequestBody PautaRequest pautaRequest) {
         Pauta pauta = pautaService.createPauta(pautaRequest);
-        return ResponseEntity.ok(new PautaResponse(pauta.getId(), pauta.getTitulo(), pauta.getCreatedAt()));
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(new PautaResponse(pauta.getId(), pauta.getTitulo(), pauta.getCreatedAt()));
     }
 }
