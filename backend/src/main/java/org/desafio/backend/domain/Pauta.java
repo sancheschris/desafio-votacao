@@ -1,16 +1,26 @@
 package org.desafio.backend.domain;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.Id;
 import java.time.Instant;
 import java.util.UUID;
+import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Data;
-import lombok.extern.jackson.Jacksonized;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
-@Jacksonized
+
+@Entity
+@Getter
+@NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor
 @Builder
-@Data
 public class Pauta {
+    @Id
     private UUID id;
-    private String descricao;
+    private String titulo;
+    @Column(name = "created_at", insertable = false, updatable = false)
     private Instant createdAt;
 }
