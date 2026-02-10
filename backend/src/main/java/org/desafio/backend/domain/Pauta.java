@@ -12,6 +12,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.CreationTimestamp;
 
 
 @Entity
@@ -26,6 +27,7 @@ public class Pauta {
     private UUID id;
     @Column(nullable = false)
     private String titulo;
-    @Column(name = "created_at",  nullable = false, insertable = false, updatable = false)
+    @CreationTimestamp
+    @Column(name = "created_at",  nullable = false, updatable = false)
     private Instant createdAt;
 }
