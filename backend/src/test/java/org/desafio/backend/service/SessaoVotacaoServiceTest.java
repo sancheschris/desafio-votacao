@@ -141,5 +141,5 @@ class SessaoVotacaoServiceTest {
             () -> sessaoVotacaoService.abrirSessaoVotacao(pautaId, 5)
         );
         assertEquals("Já existe uma sessão para essa pauta.", exception.getMessage());
-        }
+    }
 }
