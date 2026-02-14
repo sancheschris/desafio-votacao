@@ -4,6 +4,7 @@ import jakarta.transaction.Transactional;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
+import org.desafio.backend.domain.Pauta;
 import org.desafio.backend.domain.SessaoVotacao;
 import org.desafio.backend.repository.PautaRepository;
 import org.desafio.backend.repository.SessaoVotacaoRepository;
@@ -23,7 +24,7 @@ public class SessaoVotacaoService {
 
     @Transactional
     public SessaoVotacao abrirSessaoVotacao(UUID pautaId, Integer durationInMinutes) {
-        var pauta = pautaRepository.findById(pautaId)
+        Pauta pauta = pautaRepository.findById(pautaId)
                 .orElseThrow(() -> new IllegalArgumentException("Pauta não encontrada com ID: " + pautaId));
 
         long duration = (durationInMinutes == null || durationInMinutes <= 0)
@@ -32,14 +33,14 @@ public class SessaoVotacaoService {
 
         Instant now = Instant.now();
 
-        SessaoVotacao session = SessaoVotacao.builder()
+        SessaoVotacao sessaoVotacao = SessaoVotacao.builder()
                 .pautaId(pauta.getId())
                 .openedAt(now)
                 .closesAt(now.plus(duration, ChronoUnit.MINUTES))
                 .build();
 
         try {
-            return sessaoVotacaoRepository.save(session);
+            return sessaoVotacaoRepository.save(sessaoVotacao);
         } catch (DataIntegrityViolationException e) {
             throw new IllegalStateException("Já existe uma sessão para essa pauta.");
         }
