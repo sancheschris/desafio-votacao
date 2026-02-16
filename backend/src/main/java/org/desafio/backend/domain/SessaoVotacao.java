@@ -36,12 +36,4 @@ public class SessaoVotacao {
 
     @Column(name = "closed_at")
     private Instant closedAt;
-
-    public boolean isOpen() {
-        return closedAt == null && Instant.now().isBefore(closesAt);
-    }
-
-    public void close() {
-        this.closedAt = Instant.now();
-    }
 }

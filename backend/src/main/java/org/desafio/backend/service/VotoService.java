@@ -11,6 +11,8 @@ import org.desafio.backend.repository.VotoRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import static java.time.Instant.now;
+
 @Service
 public class VotoService {
 
@@ -34,7 +36,7 @@ public class VotoService {
         SessaoVotacao sessao = sessaoVotacaoRepository.findByPautaId(pautaId)
                 .orElseThrow(() -> new IllegalStateException("Sessão de votação não encontrada para esta pauta."));
 
-        Instant now = Instant.now();
+        Instant now = now();
 
         if (sessao.getClosedAt() != null || !now.isBefore(sessao.getClosesAt())) {
             throw new IllegalStateException("A sessão de votação para esta pauta já está encerrada.");
