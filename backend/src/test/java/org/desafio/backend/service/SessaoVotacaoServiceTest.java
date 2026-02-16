@@ -35,6 +35,7 @@ class SessaoVotacaoServiceTest {
 
     @Test
     public void testAbrirSessaoVotacao() {
+        // Arrange
         Integer durationInMinutes = 3;
         Pauta pauta = Pauta.builder()
                 .id(UUID.randomUUID())
@@ -54,14 +55,17 @@ class SessaoVotacaoServiceTest {
         when(pautaRepository.findById(any())).thenReturn(Optional.of(pauta));
         when(sessaoVotacaoRepository.save(any())).thenReturn(expected);
 
+        // Act
         SessaoVotacao actual = sessaoVotacaoService.abrirSessaoVotacao(pauta.getId(), durationInMinutes);
 
+        // Assert
         assertEquals(expected, actual);
         verify(sessaoVotacaoRepository, atLeastOnce()).save(any(SessaoVotacao.class));
     }
 
     @Test
     public void testAbrirSessaoVotacaoComDuracaoPadrao() {
+        // Arrange
         Pauta pauta = Pauta.builder()
                 .id(UUID.randomUUID())
                 .titulo("Pauta de Teste")
@@ -80,14 +84,17 @@ class SessaoVotacaoServiceTest {
         when(pautaRepository.findById(any())).thenReturn(Optional.of(pauta));
         when(sessaoVotacaoRepository.save(any())).thenReturn(expected);
 
+        // Act
         SessaoVotacao actual = sessaoVotacaoService.abrirSessaoVotacao(pauta.getId(), null);
 
+        // Assert
         assertEquals(expected, actual);
         verify(sessaoVotacaoRepository, atLeastOnce()).save(any(SessaoVotacao.class));
     }
 
     @Test
     public void testAbrirSessaoVotacaoComDuracaoInvalida() {
+        // Arrange
         Integer durationInMinutes = -5;
         Pauta pauta = Pauta.builder()
                 .id(UUID.randomUUID())
@@ -107,17 +114,21 @@ class SessaoVotacaoServiceTest {
         when(pautaRepository.findById(any())).thenReturn(Optional.of(pauta));
         when(sessaoVotacaoRepository.save(any())).thenReturn(expected);
 
+        // Act
         SessaoVotacao actual = sessaoVotacaoService.abrirSessaoVotacao(pauta.getId(), durationInMinutes);
 
+        // Assert
         assertEquals(expected, actual);
         verify(sessaoVotacaoRepository, atLeastOnce()).save(any(SessaoVotacao.class));
     }
 
     @Test
     public void testAbrirSessaoVotacaoPautaNaoEncontrada() {
+        // Arrange
         UUID pautaId = UUID.randomUUID();
         when(pautaRepository.findById(pautaId)).thenReturn(Optional.empty());
 
+        // Act & Assert
         IllegalArgumentException exception = assertThrows(
             IllegalArgumentException.class,
             () -> sessaoVotacaoService.abrirSessaoVotacao(pautaId, 5)
@@ -127,6 +138,7 @@ class SessaoVotacaoServiceTest {
 
     @Test
     public void testAbrirSessaoVotacaoSessaoExistente() {
+        // Arrange
         UUID pautaId = UUID.randomUUID();
         Pauta pauta = Pauta.builder()
                 .id(pautaId)
@@ -136,6 +148,7 @@ class SessaoVotacaoServiceTest {
         when(pautaRepository.findById(pautaId)).thenReturn(Optional.of(pauta));
         when(sessaoVotacaoRepository.save(any())).thenThrow(new DataIntegrityViolationException("Sessão já existe"));
 
+        // Act & Assert
         IllegalStateException exception = assertThrows(
             IllegalStateException.class,
             () -> sessaoVotacaoService.abrirSessaoVotacao(pautaId, 5)

@@ -37,6 +37,7 @@ class VotoServiceTest {
 
     @Test
     void testVotar() {
+        // Arrange
         Pauta pauta = Pauta.builder()
             .id(UUID.randomUUID())
             .titulo("Pauta de Teste")
@@ -63,14 +64,17 @@ class VotoServiceTest {
         when(votoRepository.existsByPautaIdAndAssociadoId(pauta.getId(), "128783291")).thenReturn(false);
         when(votoRepository.save(any())).thenReturn(expected);
 
+        // Act
         Voto actual = votoService.votar(pauta.getId(), expected.getAssociadoId(), expected.getValor());
 
+        // Assert
         assertEquals(expected, actual);
         verify(votoRepository, atLeastOnce()).save(any(Voto.class));
     }
 
     @Test
     void testVotarSessaoEncerrada() {
+        // Arrange
         Pauta pauta = Pauta.builder()
             .id(UUID.randomUUID())
             .titulo("Pauta de Teste")
@@ -88,6 +92,7 @@ class VotoServiceTest {
         when(pautaRepository.findById(pauta.getId())).thenReturn(java.util.Optional.of(pauta));
         when(sessaoVotacaoRepository.findByPautaId(pauta.getId())).thenReturn(Optional.of(sessaoVotacao));
 
+        // Act & Assert
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class,
                 () -> votoService.votar(pauta.getId(), "128783291", VotoValor.SIM)
@@ -97,6 +102,7 @@ class VotoServiceTest {
 
     @Test
     void testVotarAssociadoJaVotou() {
+        // Arrange
         Pauta pauta = Pauta.builder()
                 .id(UUID.randomUUID())
                 .titulo("Pauta de Teste")
@@ -114,6 +120,7 @@ class VotoServiceTest {
         when(sessaoVotacaoRepository.findByPautaId(pauta.getId())).thenReturn(Optional.of(sessaoVotacao));
         when(votoRepository.existsByPautaIdAndAssociadoId(pauta.getId(), "128783291")).thenReturn(true);
 
+        // Act & Assert
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class,
                 () -> votoService.votar(pauta.getId(), "128783291", VotoValor.SIM)
@@ -123,9 +130,11 @@ class VotoServiceTest {
 
     @Test
     void testVotarPautaNaoEncontrada() {
+        // Arrange
         UUID pautaId = UUID.randomUUID();
         when(pautaRepository.findById(pautaId)).thenReturn(Optional.empty());
 
+        // Act & Assert
         IllegalArgumentException exception = assertThrows(
                 IllegalArgumentException.class,
                 () -> votoService.votar(pautaId, "128783291", VotoValor.SIM)
@@ -135,6 +144,7 @@ class VotoServiceTest {
 
     @Test
     void testVotarSessaoVotacaoNaoEncontrada() {
+        // Arrange
         Pauta pauta = Pauta.builder()
                 .id(UUID.randomUUID())
                 .titulo("Pauta de Teste")
@@ -144,6 +154,7 @@ class VotoServiceTest {
         when(pautaRepository.findById(pauta.getId())).thenReturn(Optional.of(pauta));
         when(sessaoVotacaoRepository.findByPautaId(pauta.getId())).thenReturn(Optional.empty());
 
+        // Act & Assert
         IllegalStateException exception = assertThrows(
                 IllegalStateException.class,
                 () -> votoService.votar(pauta.getId(), "128783291", VotoValor.SIM)
@@ -153,6 +164,7 @@ class VotoServiceTest {
 
     @Test
     void testVotarErroAoRegistrarVoto() {
+        // Arrange
         Pauta pauta = Pauta.builder()
                 .id(UUID.randomUUID())
                 .titulo("Pauta de Teste")
@@ -171,6 +183,7 @@ class VotoServiceTest {
         when(votoRepository.existsByPautaIdAndAssociadoId(pauta.getId(), "128783291")).thenReturn(false);
         when(votoRepository.save(any())).thenThrow(new RuntimeException("Erro de banco de dados"));
 
+        // Act & Assert
         RuntimeException exception = assertThrows(
                 RuntimeException.class,
                 () -> votoService.votar(pauta.getId(), "128783291", VotoValor.SIM)
