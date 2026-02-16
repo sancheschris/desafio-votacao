@@ -7,6 +7,9 @@ import org.desafio.backend.domain.Pauta;
 import org.desafio.backend.domain.SessaoVotacao;
 import org.desafio.backend.domain.Voto;
 import org.desafio.backend.domain.VotoValor;
+import org.desafio.backend.exception.AssociadoJaVotouException;
+import org.desafio.backend.exception.ResourceNotFoundException;
+import org.desafio.backend.exception.SessaoEncerradaException;
 import org.desafio.backend.repository.PautaRepository;
 import org.desafio.backend.repository.SessaoVotacaoRepository;
 import org.desafio.backend.repository.VotoRepository;
@@ -15,6 +18,8 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.dao.DataAccessException;
+import org.springframework.dao.DataIntegrityViolationException;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -30,8 +35,6 @@ class VotoServiceTest {
     private VotoService votoService;
     @Mock
     private SessaoVotacaoRepository sessaoVotacaoRepository;
-    @Mock
-    private PautaRepository pautaRepository;
     @Mock
     private VotoRepository votoRepository;
 
@@ -59,7 +62,6 @@ class VotoServiceTest {
             .createdAt(Instant.now())
             .build();
 
-        when(pautaRepository.findById(pauta.getId())).thenReturn(java.util.Optional.of(pauta));
         when(sessaoVotacaoRepository.findByPautaId(pauta.getId())).thenReturn(Optional.of(sessaoVotacao));
         when(votoRepository.existsByPautaIdAndAssociadoId(pauta.getId(), "128783291")).thenReturn(false);
         when(votoRepository.save(any())).thenReturn(expected);
@@ -89,12 +91,11 @@ class VotoServiceTest {
             .closedAt(Instant.now().minusSeconds(3600))
             .build();
 
-        when(pautaRepository.findById(pauta.getId())).thenReturn(java.util.Optional.of(pauta));
         when(sessaoVotacaoRepository.findByPautaId(pauta.getId())).thenReturn(Optional.of(sessaoVotacao));
 
         // Act & Assert
-        IllegalStateException exception = assertThrows(
-                IllegalStateException.class,
+        SessaoEncerradaException exception = assertThrows(
+                SessaoEncerradaException.class,
                 () -> votoService.votar(pauta.getId(), "128783291", VotoValor.SIM)
         );
         assertEquals("A sessão de votação para esta pauta já está encerrada.", exception.getMessage());
@@ -116,30 +117,15 @@ class VotoServiceTest {
                 .closesAt(Instant.now().plusSeconds(3600))
                 .build();
 
-        when(pautaRepository.findById(pauta.getId())).thenReturn(java.util.Optional.of(pauta));
         when(sessaoVotacaoRepository.findByPautaId(pauta.getId())).thenReturn(Optional.of(sessaoVotacao));
         when(votoRepository.existsByPautaIdAndAssociadoId(pauta.getId(), "128783291")).thenReturn(true);
 
         // Act & Assert
-        IllegalStateException exception = assertThrows(
-                IllegalStateException.class,
+        AssociadoJaVotouException exception = assertThrows(
+                AssociadoJaVotouException.class,
                 () -> votoService.votar(pauta.getId(), "128783291", VotoValor.SIM)
         );
         assertEquals("Associado já votou nesta pauta.", exception.getMessage());
-    }
-
-    @Test
-    void testVotarPautaNaoEncontrada() {
-        // Arrange
-        UUID pautaId = UUID.randomUUID();
-        when(pautaRepository.findById(pautaId)).thenReturn(Optional.empty());
-
-        // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-                IllegalArgumentException.class,
-                () -> votoService.votar(pautaId, "128783291", VotoValor.SIM)
-        );
-        assertEquals("Pauta não encontrada.", exception.getMessage());
     }
 
     @Test
@@ -151,12 +137,11 @@ class VotoServiceTest {
                 .createdAt(Instant.now())
                 .build();
 
-        when(pautaRepository.findById(pauta.getId())).thenReturn(Optional.of(pauta));
         when(sessaoVotacaoRepository.findByPautaId(pauta.getId())).thenReturn(Optional.empty());
 
         // Act & Assert
-        IllegalStateException exception = assertThrows(
-                IllegalStateException.class,
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
                 () -> votoService.votar(pauta.getId(), "128783291", VotoValor.SIM)
         );
         assertEquals("Sessão de votação não encontrada para esta pauta.", exception.getMessage());
@@ -178,16 +163,15 @@ class VotoServiceTest {
                 .closesAt(Instant.now().plusSeconds(3600))
                 .build();
 
-        when(pautaRepository.findById(pauta.getId())).thenReturn(Optional.of(pauta));
         when(sessaoVotacaoRepository.findByPautaId(pauta.getId())).thenReturn(Optional.of(sessaoVotacao));
         when(votoRepository.existsByPautaIdAndAssociadoId(pauta.getId(), "128783291")).thenReturn(false);
-        when(votoRepository.save(any())).thenThrow(new RuntimeException("Erro de banco de dados"));
+        when(votoRepository.save(any())).thenThrow(new DataIntegrityViolationException("Erro de banco de dados"));
 
         // Act & Assert
-        RuntimeException exception = assertThrows(
-                RuntimeException.class,
+        AssociadoJaVotouException exception = assertThrows(
+                AssociadoJaVotouException.class,
                 () -> votoService.votar(pauta.getId(), "128783291", VotoValor.SIM)
         );
-        assertEquals("Erro ao registrar o voto: Erro de banco de dados", exception.getMessage());
+        assertEquals("Associado já votou nesta pauta", exception.getMessage());
     }
 }

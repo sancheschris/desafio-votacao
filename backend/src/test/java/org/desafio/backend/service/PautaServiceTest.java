@@ -52,24 +52,24 @@ class PautaServiceTest {
     }
 
     @Test
-    void testCreatePauta__throwsExceptionWhenTituloIsEmpty() {
+    void testCreatePauta__trimsTitulo() {
         // Arrange
-        PautaRequest request = new PautaRequest("");
+        PautaRequest request = new PautaRequest("   Aprovar orçamento 2026   ");
 
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            pautaService.createPauta(request);
-        });
-    }
+        Pauta pauta = Pauta.builder()
+                .id(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"))
+                .titulo("Aprovar orçamento 2026")
+                .createdAt(Instant.from(Instant.parse("2026-02-10T10:00:00Z")))
+                .build();
 
-    @Test
-    void testCreatePauta__throwsExceptionWhenTituloIsNull() {
-        // Arrange
-        PautaRequest request = new PautaRequest(null);
+        when(pautaRepository.save(any(Pauta.class))).thenReturn(pauta);
 
-        // Act & Assert
-        assertThrows(IllegalArgumentException.class, () -> {
-            pautaService.createPauta(request);
-        });
+        // Act
+        Pauta createdPauta = pautaService.createPauta(request);
+
+        // Assert
+        assertNotNull(createdPauta);
+        assertEquals("Aprovar orçamento 2026", createdPauta.getTitulo());
+        verify(pautaRepository, atLeastOnce()).save(any(Pauta.class));
     }
 }

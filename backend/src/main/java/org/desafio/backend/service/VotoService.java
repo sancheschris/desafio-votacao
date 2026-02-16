@@ -53,7 +53,7 @@ public class VotoService {
         try {
             return votoRepository.save(voto);
         } catch (DataIntegrityViolationException ex) {
-            throw new AssociadoJaVotouException("Associado já votou nesta pauta." + ex);
+            throw new AssociadoJaVotouException("Associado já votou nesta pauta");
         }
     }
 }
