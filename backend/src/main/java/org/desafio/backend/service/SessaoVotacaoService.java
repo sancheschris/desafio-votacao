@@ -1,6 +1,5 @@
 package org.desafio.backend.service;
 
-import jakarta.transaction.Transactional;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
 import java.util.UUID;
@@ -10,6 +9,7 @@ import org.desafio.backend.repository.PautaRepository;
 import org.desafio.backend.repository.SessaoVotacaoRepository;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class SessaoVotacaoService {

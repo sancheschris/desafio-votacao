@@ -1,9 +1,7 @@
 package org.desafio.backend.service;
 
-import jakarta.transaction.Transactional;
 import java.time.Instant;
 import java.util.UUID;
-import org.desafio.backend.domain.Pauta;
 import org.desafio.backend.domain.SessaoVotacao;
 import org.desafio.backend.domain.Voto;
 import org.desafio.backend.domain.VotoValor;
@@ -11,6 +9,7 @@ import org.desafio.backend.repository.PautaRepository;
 import org.desafio.backend.repository.SessaoVotacaoRepository;
 import org.desafio.backend.repository.VotoRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 public class VotoService {
