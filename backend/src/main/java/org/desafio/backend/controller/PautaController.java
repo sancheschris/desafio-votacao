@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/pautas")
+@RequestMapping("/api/v1/pautas")
 public class PautaController {
     private final PautaService pautaService;
 
