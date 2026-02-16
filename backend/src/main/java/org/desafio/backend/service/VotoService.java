@@ -5,9 +5,12 @@ import java.util.UUID;
 import org.desafio.backend.domain.SessaoVotacao;
 import org.desafio.backend.domain.Voto;
 import org.desafio.backend.domain.VotoValor;
-import org.desafio.backend.repository.PautaRepository;
+import org.desafio.backend.exception.AssociadoJaVotouException;
+import org.desafio.backend.exception.ResourceNotFoundException;
+import org.desafio.backend.exception.SessaoEncerradaException;
 import org.desafio.backend.repository.SessaoVotacaoRepository;
 import org.desafio.backend.repository.VotoRepository;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -17,33 +20,27 @@ import static java.time.Instant.now;
 public class VotoService {
 
     private final VotoRepository votoRepository;
-    private final PautaRepository pautaRepository;
     private final SessaoVotacaoRepository sessaoVotacaoRepository;
 
     public VotoService(VotoRepository votoRepository,
-                       PautaRepository pautaRepository,
                        SessaoVotacaoRepository sessaoVotacaoRepository) {
         this.votoRepository = votoRepository;
-        this.pautaRepository = pautaRepository;
         this.sessaoVotacaoRepository = sessaoVotacaoRepository;
     }
 
     @Transactional
     public Voto votar(UUID pautaId, String associadoId, VotoValor valor) {
-        pautaRepository.findById(pautaId)
-                .orElseThrow(() -> new IllegalArgumentException("Pauta não encontrada."));
-
         SessaoVotacao sessao = sessaoVotacaoRepository.findByPautaId(pautaId)
-                .orElseThrow(() -> new IllegalStateException("Sessão de votação não encontrada para esta pauta."));
+                .orElseThrow(() -> new ResourceNotFoundException("Sessão de votação não encontrada para esta pauta."));
 
         Instant now = now();
 
         if (sessao.getClosedAt() != null || !now.isBefore(sessao.getClosesAt())) {
-            throw new IllegalStateException("A sessão de votação para esta pauta já está encerrada.");
+            throw new SessaoEncerradaException("A sessão de votação para esta pauta já está encerrada.");
         }
 
         if (votoRepository.existsByPautaIdAndAssociadoId(pautaId, associadoId)) {
-            throw new IllegalStateException("Associado já votou nesta pauta.");
+            throw new AssociadoJaVotouException("Associado já votou nesta pauta.");
         }
 
         Voto voto = Voto.builder()
@@ -55,8 +52,8 @@ public class VotoService {
 
         try {
             return votoRepository.save(voto);
-        } catch (Exception e) {
-            throw new RuntimeException("Erro ao registrar o voto: " + e.getMessage(), e);
+        } catch (DataIntegrityViolationException ex) {
+            throw new AssociadoJaVotouException("Associado já votou nesta pauta." + ex);
         }
     }
 }
