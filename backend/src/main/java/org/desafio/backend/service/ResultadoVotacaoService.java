@@ -3,6 +3,7 @@ package org.desafio.backend.service;
 import java.util.UUID;
 import org.desafio.backend.domain.VotoValor;
 import org.desafio.backend.dto.ResultadoVotacaoResponse;
+import org.desafio.backend.exception.ResourceNotFoundException;
 import org.desafio.backend.repository.PautaRepository;
 import org.desafio.backend.repository.VotoRepository;
 import org.springframework.stereotype.Service;
@@ -23,7 +24,7 @@ public class ResultadoVotacaoService {
     public ResultadoVotacaoResponse resultado(UUID pautaId) {
 
         pautaRepository.findById(pautaId)
-                .orElseThrow(() -> new IllegalArgumentException("Pauta não encontrada: " + pautaId));
+                .orElseThrow(() -> new ResourceNotFoundException("Pauta não encontrada: " + pautaId));
 
         long totalVotosSim = votoRepository.countByPautaIdAndValor(pautaId, VotoValor.SIM);
         long totalVotosNao = votoRepository.countByPautaIdAndValor(pautaId, VotoValor.NAO);

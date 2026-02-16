@@ -1,5 +1,6 @@
 package org.desafio.backend.controller;
 
+import jakarta.validation.Valid;
 import org.desafio.backend.domain.Pauta;
 import org.desafio.backend.dto.PautaRequest;
 import org.desafio.backend.dto.PautaResponse;
@@ -21,7 +22,7 @@ public class PautaController {
     }
 
     @PostMapping
-    public ResponseEntity<PautaResponse> criarPauta(@RequestBody PautaRequest pautaRequest) {
+    public ResponseEntity<PautaResponse> criarPauta(@Valid @RequestBody PautaRequest pautaRequest) {
         Pauta pauta = pautaService.createPauta(pautaRequest);
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(new PautaResponse(pauta.getId(), pauta.getTitulo(), pauta.getCreatedAt()));
