@@ -6,6 +6,8 @@ import java.util.Optional;
 import java.util.UUID;
 import org.desafio.backend.domain.Pauta;
 import org.desafio.backend.domain.SessaoVotacao;
+import org.desafio.backend.exception.ResourceConflictException;
+import org.desafio.backend.exception.ResourceNotFoundException;
 import org.desafio.backend.repository.PautaRepository;
 import org.desafio.backend.repository.SessaoVotacaoRepository;
 import org.junit.jupiter.api.Test;
@@ -129,8 +131,8 @@ class SessaoVotacaoServiceTest {
         when(pautaRepository.findById(pautaId)).thenReturn(Optional.empty());
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(
-            IllegalArgumentException.class,
+        ResourceNotFoundException exception = assertThrows(
+            ResourceNotFoundException.class,
             () -> sessaoVotacaoService.abrirSessaoVotacao(pautaId, 5)
         );
         assertEquals("Pauta não encontrada com ID: " + pautaId, exception.getMessage());
@@ -149,8 +151,36 @@ class SessaoVotacaoServiceTest {
         when(sessaoVotacaoRepository.save(any())).thenThrow(new DataIntegrityViolationException("Sessão já existe"));
 
         // Act & Assert
-        IllegalStateException exception = assertThrows(
-            IllegalStateException.class,
+        ResourceConflictException exception = assertThrows(
+                ResourceConflictException.class,
+            () -> sessaoVotacaoService.abrirSessaoVotacao(pautaId, 5)
+        );
+        assertEquals("Já existe uma sessão para essa pauta.", exception.getMessage());
+    }
+
+    @Test
+    void testAbrirSessaoVotacaoSessaoExistenteVerificacaoPrevia() {
+        // Arrange
+        UUID pautaId = UUID.randomUUID();
+        Pauta pauta = Pauta.builder()
+                .id(pautaId)
+                .titulo("Pauta de Teste")
+                .build();
+
+        SessaoVotacao existingSessao = SessaoVotacao.builder()
+                .id(UUID.randomUUID())
+                .pautaId(pautaId)
+                .openedAt(Instant.now())
+                .closesAt(Instant.now().plus(1, ChronoUnit.MINUTES))
+                .closedAt(null)
+                .build();
+
+        when(pautaRepository.findById(pautaId)).thenReturn(Optional.of(pauta));
+        when(sessaoVotacaoRepository.findByPautaId(pautaId)).thenReturn(Optional.of(existingSessao));
+
+        // Act & Assert
+        ResourceConflictException exception = assertThrows(
+                ResourceConflictException.class,
             () -> sessaoVotacaoService.abrirSessaoVotacao(pautaId, 5)
         );
         assertEquals("Já existe uma sessão para essa pauta.", exception.getMessage());

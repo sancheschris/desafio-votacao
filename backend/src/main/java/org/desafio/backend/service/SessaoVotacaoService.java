@@ -5,6 +5,8 @@ import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import org.desafio.backend.domain.Pauta;
 import org.desafio.backend.domain.SessaoVotacao;
+import org.desafio.backend.exception.ResourceConflictException;
+import org.desafio.backend.exception.ResourceNotFoundException;
 import org.desafio.backend.repository.PautaRepository;
 import org.desafio.backend.repository.SessaoVotacaoRepository;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -25,13 +27,17 @@ public class SessaoVotacaoService {
     @Transactional
     public SessaoVotacao abrirSessaoVotacao(UUID pautaId, Integer durationInMinutes) {
         Pauta pauta = pautaRepository.findById(pautaId)
-                .orElseThrow(() -> new IllegalArgumentException("Pauta não encontrada com ID: " + pautaId));
+                .orElseThrow(() -> new ResourceNotFoundException("Pauta não encontrada com ID: " + pautaId));
 
         long duration = (durationInMinutes == null || durationInMinutes <= 0)
                 ? 1
                 : durationInMinutes;
 
         Instant now = Instant.now();
+
+        if (sessaoVotacaoRepository.findByPautaId(pauta.getId()).isPresent()) {
+            throw new ResourceConflictException("Já existe uma sessão para essa pauta.");
+        }
 
         SessaoVotacao sessaoVotacao = SessaoVotacao.builder()
                 .pautaId(pauta.getId())
@@ -42,7 +48,7 @@ public class SessaoVotacaoService {
         try {
             return sessaoVotacaoRepository.save(sessaoVotacao);
         } catch (DataIntegrityViolationException e) {
-            throw new IllegalStateException("Já existe uma sessão para essa pauta.");
+            throw new ResourceConflictException("Já existe uma sessão para essa pauta.");
         }
     }
 }

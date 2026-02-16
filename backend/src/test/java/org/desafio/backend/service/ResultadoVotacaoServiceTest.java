@@ -5,6 +5,7 @@ import java.util.UUID;
 import org.desafio.backend.domain.Pauta;
 import org.desafio.backend.domain.VotoValor;
 import org.desafio.backend.dto.ResultadoVotacaoResponse;
+import org.desafio.backend.exception.ResourceNotFoundException;
 import org.desafio.backend.repository.PautaRepository;
 import org.desafio.backend.repository.VotoRepository;
 import org.junit.jupiter.api.Test;
@@ -96,7 +97,7 @@ class ResultadoVotacaoServiceTest {
         when(pautaRepository.findById(any())).thenReturn(Optional.empty());
 
         // Act & Assert
-        IllegalArgumentException exception = assertThrows(IllegalArgumentException.class, ()
+        ResourceNotFoundException exception = assertThrows(ResourceNotFoundException.class, ()
                 -> resultadoVotacaoService.resultado(UUID.randomUUID()));
 
         assertTrue(exception.getMessage().contains("Pauta não encontrada"));

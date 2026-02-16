@@ -1,5 +1,9 @@
 package org.desafio.backend.dto;
 
+
+import jakarta.validation.constraints.NotBlank;
+
 public record PautaRequest(
-    String titulo
+        @NotBlank(message = "O título da pauta é obrigatório.")
+        String titulo
 ) {}

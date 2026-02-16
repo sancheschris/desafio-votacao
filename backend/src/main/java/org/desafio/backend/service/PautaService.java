@@ -15,10 +15,6 @@ public class PautaService {
     }
 
     public Pauta createPauta(PautaRequest pautaRequest) {
-        if (pautaRequest.titulo() == null || pautaRequest.titulo().isBlank()) {
-            throw new IllegalArgumentException("O título da pauta é obrigatório.");
-        }
-
         Pauta novaPauta = Pauta.builder()
                 .titulo(pautaRequest.titulo().trim())
                 .build();
