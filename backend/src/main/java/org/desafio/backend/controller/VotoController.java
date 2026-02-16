@@ -17,7 +17,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-@RequestMapping("/votos")
+@RequestMapping("/api/v1/pautas")
 public class VotoController {
 
     private final VotoService votoService;
@@ -28,7 +28,7 @@ public class VotoController {
         this.resultadoVotacaoService = resultadoVotacaoService;
     }
 
-    @PostMapping("/{pautaId}/votar")
+    @PostMapping("/{pautaId}/votos")
     public ResponseEntity<VotoResponse> votar(@PathVariable UUID pautaId, @RequestBody CriarVotoRequest request) {
 
         Voto voto = votoService.votar(pautaId, request.associadoId(), request.voto());
@@ -44,7 +44,7 @@ public class VotoController {
                 ));
     }
 
-    @GetMapping("/resultado/{pautaId}")
+    @GetMapping("/{pautaId}/resultado")
     public ResponseEntity<ResultadoVotacaoResponse> resultadoVotacao(@PathVariable UUID pautaId) {
         return ResponseEntity.ok(resultadoVotacaoService.resultado(pautaId));
     }
