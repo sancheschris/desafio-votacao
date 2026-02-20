@@ -9,6 +9,10 @@ import org.desafio.backend.domain.VotoValor;
 import org.desafio.backend.exception.AssociadoJaVotouException;
 import org.desafio.backend.exception.ResourceNotFoundException;
 import org.desafio.backend.exception.SessaoEncerradaException;
+import org.desafio.backend.exception.UsuarioNaoPodeVotarException;
+import org.desafio.backend.integration.cpf.FakeCpfValidationClient;
+import org.desafio.backend.integration.cpf.StatusCpf;
+import org.desafio.backend.integration.dto.UserVoteStatusResponse;
 import org.desafio.backend.repository.SessaoVotacaoRepository;
 import org.desafio.backend.repository.VotoRepository;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -23,15 +27,24 @@ public class VotoService {
 
     private final VotoRepository votoRepository;
     private final SessaoVotacaoRepository sessaoVotacaoRepository;
+    private final FakeCpfValidationClient  cpfValidationClient;
 
     public VotoService(VotoRepository votoRepository,
-                       SessaoVotacaoRepository sessaoVotacaoRepository) {
+                       SessaoVotacaoRepository sessaoVotacaoRepository,
+                       FakeCpfValidationClient cpfValidationClient) {
         this.votoRepository = votoRepository;
         this.sessaoVotacaoRepository = sessaoVotacaoRepository;
+        this.cpfValidationClient = cpfValidationClient;
     }
 
     @Transactional
     public Voto votar(UUID pautaId, String associadoId, VotoValor valor) {
+        log.info("Validando CPF: {}", associadoId);
+        UserVoteStatusResponse statusCpf = cpfValidationClient.checkCpf(associadoId);
+
+        if (StatusCpf.UNABLE_TO_VOTE.name().equals(statusCpf.status())) {
+            throw new UsuarioNaoPodeVotarException("Usuário não pode votar.");
+        }
         log.info("Registrando voto para pauta ID: {}, associado ID: {}, valor: {}", pautaId, associadoId, valor);
 
         SessaoVotacao sessao = sessaoVotacaoRepository.findByPautaId(pautaId)
