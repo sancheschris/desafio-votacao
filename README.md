@@ -13,9 +13,9 @@ POSTGRES_DB=seu_banco_de_dados
 RABBITMQ_DEFAULT_USER=seu_usuario_rabbitmq
 RABBITMQ_DEFAULT_PASS=sua_senha_rabbitmq
 ```
-3. Rode o docker-compose para subir o banco de dados com o comando `docker-compose up -d`
-4. Execute o comando `mvn spring-boot:run` para iniciar a aplicação
-5. A API estará disponível em `http://localhost:8080` ou no `http://localhost:8080/swagger-ui/index.html` para acessar a documentação da API
+4. Rode o docker-compose para subir o banco de dados com o comando `docker-compose up -d`
+5. Execute o comando `mvn spring-boot:run` para iniciar a aplicação
+6. A API estará disponível em `http://localhost:8080` ou no `http://localhost:8080/swagger-ui/index.html` para acessar a documentação da API
 
 ## Estrutura do Projeto
 
