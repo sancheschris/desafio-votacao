@@ -2,6 +2,7 @@ package org.desafio.backend.service;
 
 import java.time.Instant;
 import java.util.List;
+import lombok.extern.slf4j.Slf4j;
 import org.desafio.backend.domain.SessaoVotacao;
 import org.desafio.backend.dto.ResultadoVotacaoResponse;
 import org.desafio.backend.integration.dto.ResultadoVotacaoEvent;
@@ -12,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Slf4j
 public class SessaoVotacaoClosingJob {
     private final SessaoVotacaoRepository sessaoRepo;
     private final ResultadoVotacaoService resultadoService;
@@ -30,12 +32,15 @@ public class SessaoVotacaoClosingJob {
     @Scheduled(fixedDelayString = "${votacao.session-close-job-ms:5000}")
     @Transactional
     public void closeExpiredSessions() {
+        log.info("SessaoVotacaoClosingJob iniciada.");
         Instant now = Instant.now();
 
         List<SessaoVotacao> expiradas = sessaoRepo.findExpiredOpenSessions(now);
+        log.info("Encontradas {} sessões expiradas para fechar.", expiradas.size());
 
         for (SessaoVotacao sessao : expiradas) {
             sessao.setClosedAt(now);
+            log.info("Fechando sessão: id={}, pautaId={}, closedAt={}", sessao.getId(), sessao.getPautaId(), now);
 
             ResultadoVotacaoResponse resultadoVotacao = resultadoService.resultado(sessao.getPautaId());
             publisher.publish(new ResultadoVotacaoEvent(
@@ -47,5 +52,6 @@ public class SessaoVotacaoClosingJob {
                     now
             ));
         }
+        log.info("SessaoVotacaoClosingJob finalizada.");
     }
 }

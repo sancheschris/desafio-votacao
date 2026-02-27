@@ -9,6 +9,6 @@ import org.springframework.stereotype.Component;
 public class ResultadoVotacaoListener {
     @RabbitListener(queues = RabbitMqConfig.QUEUE_RESULTADO)
     public void onMessage(ResultadoVotacaoEvent event) {
-        System.out.println("📩 Resultado recebido: " + event);
+        System.out.println("Resultado recebido: " + event);
     }
 }
