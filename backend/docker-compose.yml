@@ -13,5 +13,18 @@ services:
     volumes:
       - votacao_pg_data:/var/lib/postgresql/data
 
+  rabbitmq:
+    image: rabbitmq:3-management
+    container_name: votacao-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_USER:-guest}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_PASSWORD:-guest}
+    ports:
+      - "${RABBITMQ_PORT:-5672}:5672"
+      - "${RABBITMQ_UI_PORT:-15672}:15672"
+    volumes:
+      - votacao_rabbitmq_data:/var/lib/rabbitmq
+
 volumes:
   votacao_pg_data:
+  votacao_rabbitmq_data:
